@@ -94,9 +94,9 @@ def parse_sc2bank(fname):
 	if root.tag != 'Bank':
 		raise RuntimeError('Invalid root tag: '+root.tag)
 	bank = []
-	for section in [x for x in root if x.tag == 'Section']:
+	for section in root.findall('./Section'):
 		keys = []
-		for key in [x for x in section if x.tag == 'Key']:
+		for key in section.findall('./Key'):
 			value = key[0]
 			if 'int' in value.attrib:
 				value_type = 'int'
@@ -106,7 +106,7 @@ def parse_sc2bank(fname):
 				raise RuntimeError('Unknown value type.')
 			keys.append(Key(key.attrib['name'], value_type, value.attrib[value_type]))
 		bank.append(Section(section.attrib['name'], keys))
-	signature_element = root.find('Signature')
+	signature_element = root.find('./Signature')
 	if signature_element is not None:
 		signature = signature_element.get('value')
 	else:
