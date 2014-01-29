@@ -97,7 +97,7 @@ def parse_sc2bank(fname):
 	for section in root.findall('./Section'):
 		keys = []
 		for key in section.findall('./Key'):
-			value = key[0]
+			value = key.find('./Value')
 			if 'int' in value.attrib:
 				value_type = 'int'
 			elif 'string' in value.attrib:
