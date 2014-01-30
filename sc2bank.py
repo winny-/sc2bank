@@ -128,7 +128,7 @@ def sign(author_id, user_id, bank_name, bank):
     author_id -- Author ID, e.g. "1-S2-1-1234567"
     user_id   -- User ID, e.g. "1-S2-1-1234567"
     bank_name -- SC2Bank filename without .SC2Bank and file's path
-    bank -- List of Section class instances
+    bank      -- List of Section class instances
 
     Returns:
     String that should be the Signature tag's "value" attribute's value.
