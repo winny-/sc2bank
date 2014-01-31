@@ -52,7 +52,8 @@ class Key(object):
     def __init__(self, name, value_type, value):
         """
         name       -- Key tag's name attribute
-        value_type -- name of the Value tag's attribute with data
+        value_type -- name of the Value tag's attribute with data. Should
+                      be 'int', 'string', or 'fixed'.
         value      -- the value of the Value tag's value_type attribute
         """
         self.name = name
@@ -107,12 +108,14 @@ def parse_sc2bank(fname):
         keys = []
         for key in section.findall('./Key'):
             value = key.find('./Value')
-            if 'int' in value.attrib:
-                value_type = 'int'
-            elif 'string' in value.attrib:
-                value_type = 'string'
+            # Do not look for "int" or "string" attributes. Instead get the only
+            # attribute's name or raise an exception. This future-proofs for unknown
+            # value types.
+            if len(value.attrib) == 1:
+                value_type = list(value.attrib.keys())[0]
             else:
-                raise RuntimeError('Unknown value type.')
+                raise RuntimeError('Unknown value type in {}'
+                                   .format(ET.tostring(value).rstrip().decode('UTF-8')))
             keys.append(Key(key.attrib['name'], value_type, value.attrib[value_type]))
         bank.append(Section(section.attrib['name'], keys))
     signature_element = root.find('./Signature')
