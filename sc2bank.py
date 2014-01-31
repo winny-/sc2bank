@@ -30,6 +30,7 @@ $ python sc2bank.py "$HOME/Library/Application Support/Blizzard/StarCraft II/Acc
 from __future__ import print_function
 import hashlib
 import os
+import re
 import xml.etree.ElementTree as ET
 
 class Section(object):
@@ -63,6 +64,28 @@ class Key(object):
     def __lt__(self, other):
         return self.name < other.name
 
+
+def inspect_file_path(path):
+    """Inspect a SC2Bank file's path for metadata necessary to generate a signature.
+
+    path -- Path to the SC2Bank file
+
+    Returns:
+    Tuple of the Author ID, User ID, and Bank name. Each element can be None if
+    the information could not be deduced.
+    """
+    elements = os.path.dirname(path).split(os.sep)
+    id_ = re.compile('^[0-9]-S2-[0-9]-[0-9]{6,7}$')
+    author_id, user_id = map(lambda e: e if re.match(id_, e) else None,
+                             [elements[-1], elements[-3]])
+    name = os.path.basename(path)
+    if re.match('^.+\.SC2Bank$', name):
+        bank_name = name.rstrip('.SC2Bank')
+    else:
+        bank_name = None
+    return author_id, user_id, bank_name
+
+
 def sign_file(fname, author_id=None, user_id=None, bank_name=None):
     """Sign a SC2Bank file.
 
@@ -78,13 +101,13 @@ def sign_file(fname, author_id=None, user_id=None, bank_name=None):
     Tuple of the calculated signature and the signature recorded in
     the XML document.
     """
-    directory = os.path.dirname(fname).split(os.sep)
+    inspected_author_id, inspected_user_id, inspected_bank_name = inspect_file_path(fname)
     if not author_id:
-        author_id = directory[-1]
+        author_id = inspected_author_id
     if not user_id:
-        user_id = directory[-3]
+        user_id = inspected_user_id
     if not bank_name:
-        bank_name = os.path.basename(fname).rstrip('.SC2Bank')
+        bank_name = inspected_bank_name
 
     bank, signature = parse_sc2bank(fname)
 
@@ -136,12 +159,13 @@ def sign(author_id, user_id, bank_name, bank):
     Returns:
     String that should be the Signature tag's "value" attribute's value.
     """
-    s = author_id + user_id + bank_name
+    h = hashlib.sha1()
+    h.update(''.join([author_id, user_id, bank_name]))
     for section in sorted(bank):
-        s += section.name
+        h.update(section.name)
         for key in sorted(section.keys):
-            s += key.name + 'Value' + key.type + key.value
-    return hashlib.sha1(s.encode('UTF-8')).hexdigest().upper()
+            h.update(''.join([key.name, 'Value', key.type, key.value]))
+    return h.hexdigest().upper()
 
 
 def test():
