@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
         self.assertEquals(sign(self.author_id, self.user_id, self.bank_name, self.bank), self.signature)
 
     def test_parse(self):
-        self.assertEquals(parse_sc2bank(self.contents, from_string=True), (self.bank, self.signature))
+        self.assertEquals(parse(self.contents, from_string=True), (self.bank, self.signature))
 
 
 if __name__ == '__main__':

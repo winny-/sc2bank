@@ -121,12 +121,12 @@ def sign_file(fname, author_id=None, user_id=None, bank_name=None):
     if not bank_name:
         bank_name = inspected_bank_name
 
-    bank, signature = parse_sc2bank(fname)
+    bank, signature = parse(fname)
 
     return sign(author_id, user_id, bank_name, bank), signature
 
 
-def parse_sc2bank(fname, from_string=False):
+def parse(fname, from_string=False):
     """Parse a SC2Bank file.
 
     fname       -- Path to the SC2Bank file
