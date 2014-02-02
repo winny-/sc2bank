@@ -176,11 +176,12 @@ def sign(author_id, user_id, bank_name, bank):
     String that should be the Signature tag's "value" attribute's value.
     """
     h = hashlib.sha1()
-    h.update(''.join([author_id, user_id, bank_name]))
+    update = lambda s: h.update(''.join(s).encode('UTF-8'))
+    update([author_id, user_id, bank_name])
     for section in sorted(bank):
-        h.update(section.name)
+        update(section.name)
         for key in sorted(section.keys):
-            h.update(''.join([key.name, 'Value', key.type, key.value]))
+            update([key.name, 'Value', key.type, key.value])
     return h.hexdigest().upper()
 
 
