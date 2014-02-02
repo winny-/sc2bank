@@ -28,10 +28,12 @@ $ python sc2bank.py "$HOME/Library/Application Support/Blizzard/StarCraft II/Acc
 """
 
 from __future__ import print_function
+from collections import namedtuple
 import hashlib
 import os
 import re
 import xml.etree.ElementTree as ET
+
 
 class Section(object):
     """Section XML tag container for descendent Key tags."""
@@ -65,25 +67,28 @@ class Key(object):
         return self.name < other.name
 
 
+PathInfo = namedtuple('PathInfo', ['author_id', 'user_id', 'name'])
+
+
 def inspect_file_path(path):
     """Inspect a SC2Bank file's path for metadata necessary to generate a signature.
 
     path -- Path to the SC2Bank file
 
     Returns:
-    Tuple of the Author ID, User ID, and Bank name. Each element can be None if
+    Tuple of the Author ID, User ID, and Bank name. Each element may be None if
     the information could not be deduced.
     """
     elements = os.path.dirname(path).split(os.sep)
     id_ = re.compile('^[0-9]-S2-[0-9]-[0-9]{6,7}$')
     author_id, user_id = map(lambda e: e if re.match(id_, e) else None,
                              [elements[-1], elements[-3]])
-    name = os.path.basename(path)
-    if re.match('^.+\.SC2Bank$', name):
-        bank_name = name.rstrip('.SC2Bank')
+    found = re.match('^(.+)(\.SC2Bank)$', os.path.basename(path))
+    if found:
+        bank_name = found.group(1)
     else:
         bank_name = None
-    return author_id, user_id, bank_name
+    return PathInfo(author_id, user_id, bank_name)
 
 
 def sign_file(fname, author_id=None, user_id=None, bank_name=None):
