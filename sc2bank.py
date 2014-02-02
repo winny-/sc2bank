@@ -49,6 +49,10 @@ class Section(object):
     def __lt__(self, other):
         return self.name < other.name
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
 class Key(object):
     """Key XML tag container for a single descendent Value tag."""
 
@@ -65,6 +69,9 @@ class Key(object):
 
     def __lt__(self, other):
         return self.name < other.name
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
 PathInfo = namedtuple('PathInfo', ['author_id', 'user_id', 'name'])
