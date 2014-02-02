@@ -126,16 +126,20 @@ def sign_file(fname, author_id=None, user_id=None, bank_name=None):
     return sign(author_id, user_id, bank_name, bank), signature
 
 
-def parse_sc2bank(fname):
+def parse_sc2bank(fname, from_string=False):
     """Parse a SC2Bank file.
 
-    fname -- Path to the SC2Bank file
+    fname       -- Path to the SC2Bank file
+    from_string -- Whether to parse from a string instead of a file.
 
     Returns:
     Tuple of the parsed Bank element and the signature recorded in
     the XML document.
     """
-    root = ET.parse(fname).getroot()
+    if from_string:
+        root = ET.fromstring(fname)
+    else:
+        root = ET.parse(fname).getroot()
     if root.tag != 'Bank':
         raise RuntimeError('Invalid root tag: '+root.tag)
     bank = []
@@ -178,24 +182,6 @@ def sign(author_id, user_id, bank_name, bank):
         for key in sorted(section.keys):
             h.update(''.join([key.name, 'Value', key.type, key.value]))
     return h.hexdigest().upper()
-
-
-def test():
-    """Quick and dirty assert-based test suite for this module."""
-    author_id = '1-S2-1-4337146'
-    user_id = '1-S2-1-4253458'
-    bank_name = 'llIlIIlIlIllIllI'
-    bank = [
-        Section('lllllIIlIllIIllI', [
-            Key('lllllllIlIllIIII', 'int', '3')
-        ]),
-        Section('IIlIlIIlllIIII', [
-            Key('IllIIIIIlIIIII', 'int', '33619')
-        ])
-    ]
-    assert sign(author_id, user_id, bank_name, bank) \
-        == '267B50FB94512FD93A28345D93A519639F4F3F0D'
-    print('All tests succeeded.')
 
 
 if __name__ == '__main__':
