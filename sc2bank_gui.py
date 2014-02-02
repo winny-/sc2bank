@@ -53,66 +53,70 @@ import hashlib
 import sc2bank
 
 
+_font = QFont('Courier')
+_SHA1WIDTH = 350
+
+def _label(title):
+    label = QLabel(title)
+    label.adjustSize()
+    return label
+
+def _lineEdit(readonly=False, width=None, changed=None):
+    line = QLineEdit()
+    line.setFont(_font)
+    line.setReadOnly(readonly)
+    if changed is not None:
+        line.textEdited.connect(changed)
+    if width is not None:
+        line.setMinimumWidth(width)
+    return line
+
+def _textEdit(readonly=False, height=None):
+    text = QTextEdit()
+    text.setFont(_font)
+    text.setReadOnly(readonly)
+    if height is not None:
+        text.setMaximumHeight(height)
+    return text
+
+
 class DropSiteWindow(QWidget):
 
-    SHA1WIDTH = 350
-    changed = pyqtSignal(QMimeData)
+    changedData = pyqtSignal(QMimeData)
     WINDOW_TITLE = 'SC2Bank Signer'
 
     def __init__(self):
         super(DropSiteWindow, self).__init__()
 
-        font = QFont('Courier')
+        self.model = None
+        self.createGUI()
 
-        self.sc2bank = None
 
-        self.changed.connect(self.droppedSC2Bank)
+
+    def createGUI(self):
+        self.changedData.connect(self.droppedSC2Bank)
 
         self.setAcceptDrops(True)
 
         self.setAutoFillBackground(True)
 
-        self.oldSigLabel = QLabel("Old signature:")
-        self.oldSigLabel.adjustSize()
-        self.oldSigText = QLineEdit()
-        self.oldSigText.setReadOnly(True)
-        self.oldSigText.setMinimumWidth(self.SHA1WIDTH)
-        self.oldSigText.setFont(font)
+        self.oldSigLabel = _label("Old signature:")
+        self.oldSigText = _lineEdit(readonly=True, width=_SHA1WIDTH)
 
-        self.newSigLabel = QLabel("New signature:")
-        self.newSigLabel.adjustSize()
-        self.newSigText = QLineEdit()
-        self.newSigText.setReadOnly(True)
-        self.newSigText.setMinimumWidth(self.SHA1WIDTH)
-        self.newSigText.setFont(font)
+        self.newSigLabel = _label("New signature:")
+        self.newSigText = _lineEdit(readonly=True, width=_SHA1WIDTH)
 
-        self.fileNameLabel = QLabel("File name:")
-        self.fileNameLabel.adjustSize()
-        self.fileNameText = QTextEdit()
-        self.fileNameText.setReadOnly(True)
-        self.fileNameText.setFont(font)
-        self.fileNameText.setMaximumHeight(60)
+        self.fileNameLabel = _label("File name:")
+        self.fileNameText = _textEdit(readonly=True, height=60)
 
-        self.authorIdLabel = QLabel("Author ID:")
-        self.authorIdLabel.adjustSize()
-        self.authorIdText = QLineEdit()
-        self.authorIdText.setFont(font)
+        self.authorIdLabel = _label("Author ID:")
+        self.authorIdText = _lineEdit(changed=self.authorChanged)
 
-        self.userIdLabel = QLabel("User ID:")
-        self.userIdLabel.adjustSize()
-        self.userIdText = QLineEdit()
-        self.userIdText.setFont(font)
+        self.userIdLabel = _label("User ID:")
+        self.userIdText = _lineEdit(changed=self.userChanged)
 
-        self.bankNameLabel = QLabel("Bank Name:")
-        self.bankNameLabel.adjustSize()
-        self.bankNameText = QLineEdit()
-        self.bankNameText.setFont(font)
-
-        # self.bankLabel = QLabel("Bank XML")
-        # self.bankLabel.adjustSize()
-        # self.bankText = QTextEdit()
-        # self.bankText.setFont(font)
-        # self.bankText.setReadOnly(True)
+        self.bankNameLabel = _label("Bank Name:")
+        self.bankNameText = _lineEdit(changed=self.nameChanged)
 
         self.dropArea = QLabel('<Drop SC2Bank file here>')
         self.dropArea.setMinimumSize(200, 200)
@@ -149,16 +153,12 @@ class DropSiteWindow(QWidget):
 
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(self.gridLayout)
-        # mainLayout.addWidget(self.bankLabel)
-        # mainLayout.setAlignment(self.bankLabel, Qt.AlignHCenter)
-        # mainLayout.addWidget(self.bankText)
         mainLayout.addWidget(self.dropArea)
         mainLayout.addWidget(self.buttonBox)
         self.setLayout(mainLayout)
 
         self.setWindowTitle(self.WINDOW_TITLE)
-        self.setMinimumSize(350, 500)
-
+        self.setMinimumSize(350, 500)        
 
     def dragEnterEvent(self, event):
         self.setBackgroundRole(QPalette.Highlight)
@@ -169,7 +169,7 @@ class DropSiteWindow(QWidget):
         event.acceptProposedAction()
         self.setBackgroundRole(QPalette.Window)
         self.dropArea.setBackgroundRole(QPalette.Dark)
-        self.changed.emit(event.mimeData())
+        self.changedData.emit(event.mimeData())
 
     def dragLeaveEvent(self, event):
         self.setBackgroundRole(QPalette.Window)
@@ -178,62 +178,26 @@ class DropSiteWindow(QWidget):
 
     def clear(self):
         for widget in [self.newSigText, self.oldSigText, self.fileNameText,
-                       self.authorIdText, self.userIdText, self.bankNameText,
-                       self.bankText]:
+                       self.authorIdText, self.userIdText, self.bankNameText]:
             widget.setText('')
 
-        self.sc2bank = None
+        self.model = None
 
 
     def updateSignature(self):
-        if self.sc2bank is None:
-            return
-        if self.sc2bank['new'] != self.sc2bank['old']:
-            contents = ''
-            with open(self.sc2bank['name'], 'r') as f:
-                contents = f.read()
-            count = contents.count(self.sc2bank['old'])
-            print(count, contents)
-            if count != 1:
-                raise RuntimeError('There are more than one occurence of the hash, not replacing.')
-                return
-            with open(self.sc2bank['name'], 'w') as f:
-                f.write(str.replace(contents, self.sc2bank['old'], self.sc2bank['new']))
-            self.checkSC2Bank()
+        if self.model:
+            self.model.save()
+            self.model = Model(self.model.file)
+            self.reflectModel()
 
-    def checkSC2Bank(self, name=None):
-        if name is None:
-            name = self.sc2bank['name']
-        else:
-            self.sc2bank = {}
-
-
-        author_id, user_id, bank_name = sc2bank.inspect_file_path(name)
-        with open(name) as f:
-            contents = f.read()
-        checksum = hashlib.sha1(contents)
-        bank, old = sc2bank.parse_sc2bank(contents, from_string=True)
-        new = None
-        if None not in [author_id, user_id, bank_name, bank]:
-           new = sc2bank.sign(author_id, user_id, bank_name, bank)
-        self.sc2bank = {
-            'old': old,
-            'new': new,
-            'name': name,
-            'bank_name': bank_name,
-            'author_id': author_id,
-            'user_id': user_id,
-            'contents': contents,
-            'checksum': checksum
-        }
-        self.oldSigText.setText(old)
-        self.newSigText.setText(new)
-        self.authorIdText.setText(author_id)
-        self.userIdText.setText(user_id)
-        self.bankNameText.setText(bank_name)
-        self.fileNameText.setText(name)
-        self.bankText.setText(contents)
-        self.setWindowTitle(''.join([self.WINDOW_TITLE + ': ', bank_name]))
+    def reflectModel(self):
+        self.oldSigText.setText(self.model.recorded_signature)
+        self.newSigText.setText(self.model.calculate_signature())
+        self.authorIdText.setText(self.model.author_id)
+        self.userIdText.setText(self.model.user_id)
+        self.bankNameText.setText(self.model.name)
+        self.fileNameText.setText(self.model.file)
+        self.setWindowTitle(''.join([self.WINDOW_TITLE + ': ', self.model.name]))
 
     def droppedSC2Bank(self, mimeData=None):
         if mimeData is None or not mimeData.hasUrls():
@@ -246,9 +210,60 @@ class DropSiteWindow(QWidget):
 
         fname = urls[0].path()
 
-        self.checkSC2Bank(fname)
+        self.model = Model(fname)
+        self.reflectModel()
+
+    def authorChanged(self, event):
+        if self.model:
+            self.model.update(author_id=self.authorIdText.text())
+            self.newSigText.setText(self.model.calculate_signature())
+
+    def userChanged(self, event):
+        if self.model:
+            self.model.update(user_id=self.userIdText.text())
+            self.newSigText.setText(self.model.calculate_signature())
+
+    def nameChanged(self, event):
+        if self.model:
+            self.model.update(name=self.bankNameText.text())
+            self.newSigText.setText(self.model.calculate_signature())
 
 
+class Model(object):
+    def __init__(self, file_):
+        self.file = file_
+
+        info = sc2bank.inspect_file_path(file_)
+        self.author_id = info.author_id
+        self.user_id = info.user_id
+        self.name = info.name
+
+        with open(file_, 'r') as f:
+            self.contents = f.read()
+
+        self.bank, self.recorded_signature = sc2bank.parse(self.contents, from_string=True)
+
+    def calculate_signature(self):
+        return sc2bank.sign(self.author_id, self.user_id, self.name, self.bank)
+
+    def update(self, **changes):
+        for k, v in changes.iteritems():
+            if k == 'author_id':
+                self.author_id = v
+            if k == 'user_id':
+                self.user_id = v
+            if k == 'name':
+                self.name = v
+
+    def save(self, file_=None):
+        if file_ is None:
+            file_ = self.file
+        signature = self.calculate_signature()
+        if self.contents.count(self.recorded_signature) != 1:
+            raise RuntimeError('There are more than one occurence of the hash, not replacing.')
+            return
+        with open(file_, 'w') as f:
+            f.write(str.replace(self.contents, self.recorded_signature, signature))
 
 if __name__ == '__main__':
 
