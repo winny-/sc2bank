@@ -35,11 +35,7 @@ class Test(unittest.TestCase):
 
     def test_inspect_file_path(self):
         path = ('Blizzard', 'StarCraft II', 'Accounts', '12345678', '1-S2-1-9876543', 'Banks', '1-S2-1-123456', 'mySc2bank.SC2Bank')
-        orig_sep = os.sep
-        for sep in ('\\', '/'):
-            os.sep = sep
-            self.assertEquals(inspect_file_path(sep.join(path)), ('1-S2-1-123456', '1-S2-1-9876543', 'mySc2bank'))
-        os.sep = orig_sep
+        self.assertEquals(inspect_file_path(os.sep.join(path)), ('1-S2-1-123456', '1-S2-1-9876543', 'mySc2bank'))
 
     def test_sign(self):
         self.assertEquals(sign(self.author_id, self.user_id, self.bank_name, self.bank), self.signature)
