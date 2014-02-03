@@ -98,7 +98,7 @@ def inspect_file_path(path):
     return PathInfo(author_id, user_id, bank_name)
 
 
-def sign_file(fname, author_id=None, user_id=None, bank_name=None):
+def sign_file(fname, author_id=None, user_id=None, name=None):
     """Sign a SC2Bank file.
 
     fname     -- Path to the SC2Bank file
@@ -106,24 +106,24 @@ def sign_file(fname, author_id=None, user_id=None, bank_name=None):
                  (default None, derived from last directory element)
     user_id   -- User ID, e.g. "1-S2-1-1234567" (default None,
                  derived from third to last directory element)
-    bank_name -- SC2Bank filename without .SC2Bank or the file's path
+    name      -- SC2Bank filename without .SC2Bank or the file's path
                  (default None)
 
     Returns:
     Tuple of the calculated signature and the signature recorded in
     the XML document.
     """
-    inspected_author_id, inspected_user_id, inspected_bank_name = inspect_file_path(fname)
+    info = inspect_file_path(fname)
     if not author_id:
-        author_id = inspected_author_id
+        author_id = info.author_id
     if not user_id:
-        user_id = inspected_user_id
-    if not bank_name:
-        bank_name = inspected_bank_name
+        user_id = info.user_id
+    if not name:
+        name = info.name
 
     bank, signature = parse(fname)
 
-    return sign(author_id, user_id, bank_name, bank), signature
+    return sign(author_id, user_id, name, bank), signature
 
 
 def parse(fname, from_string=False):
@@ -155,7 +155,8 @@ def parse(fname, from_string=False):
             else:
                 raise RuntimeError('Unknown value type in {}'
                                    .format(ET.tostring(value).rstrip().decode('UTF-8')))
-            keys.append(Key(key.attrib['name'], value_type, value.attrib[value_type]))
+            key = Key(key.attrib['name'], value_type, value.attrib[value_type])
+            keys.append(key)
         bank.append(Section(section.attrib['name'], keys))
     signature_element = root.find('./Signature')
     if signature_element is not None:
@@ -164,12 +165,12 @@ def parse(fname, from_string=False):
         signature = None
     return bank, signature
 
-def sign(author_id, user_id, bank_name, bank):
+def sign(author_id, user_id, name, bank):
     """Sign a SC2Bank file representation.
 
     author_id -- Author ID, e.g. "1-S2-1-1234567"
     user_id   -- User ID, e.g. "1-S2-1-1234567"
-    bank_name -- SC2Bank filename without .SC2Bank and file's path
+    name      -- SC2Bank filename without .SC2Bank and file's path
     bank      -- List of Section class instances
 
     Returns:
@@ -177,7 +178,7 @@ def sign(author_id, user_id, bank_name, bank):
     """
     h = hashlib.sha1()
     update = lambda s: h.update(''.join(s).encode('UTF-8'))
-    update([author_id, user_id, bank_name])
+    update([author_id, user_id, name])
     for section in sorted(bank):
         update(section.name)
         for key in sorted(section.keys):
