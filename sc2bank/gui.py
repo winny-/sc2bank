@@ -137,6 +137,7 @@ class DropSiteWindow(QMainWindow):
         # fileMenu = self.menuBar().addMenu('&File')
         # fileMenu.addAction(self.openAct)
         # fileMenu.addAction(self.saveAct)
+        pass
 
     def createActions(self):
         self.openAct = QAction("&Open", self, shortcut=QKeySequence.Open,
