@@ -44,12 +44,11 @@
 
 
 from PyQt5.QtCore import pyqtSignal, QMimeData, Qt
-from PyQt5.QtGui import QPalette, QPixmap, QFont
+from PyQt5.QtGui import QPalette, QPixmap, QFont, QKeySequence
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QDialogButtonBox,
         QFrame, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
         QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QTextEdit,
-        QTreeWidget)
-import hashlib
+        QTreeWidget, QMenuBar, QMenu, QMainWindow, QAction)
 import sc2bank
 
 
@@ -109,7 +108,7 @@ class DropArea(QLabel):
         self.setBackgroundRole(QPalette.Dark)
 
 
-class DropSiteWindow(QWidget):
+class DropSiteWindow(QMainWindow):
 
     changedData = pyqtSignal(QMimeData)
     WINDOW_TITLE = 'SC2Bank Signer'
@@ -118,9 +117,33 @@ class DropSiteWindow(QWidget):
         super(DropSiteWindow, self).__init__()
 
         self.model = None
-        self.createGUI()
 
-    def createGUI(self):
+        self.mainWidget = QWidget()
+        self.setCentralWidget(self.mainWidget)
+
+        self.createActions()
+        self.createMenus()
+        self.createActions()
+        self.createApplicationWidgets()
+        self.createControlWidgets()
+        self.createLayout()
+
+        self.mainWidget.setLayout(self.mainLayout)
+
+        self.setWindowTitle(self.WINDOW_TITLE)
+        self.setMinimumSize(350, 500)
+
+    def createMenus(self):
+        # fileMenu = self.menuBar().addMenu('&File')
+        # fileMenu.addAction(self.openAct)
+        # fileMenu.addAction(self.saveAct)
+
+    def createActions(self):
+        self.openAct = QAction("&Open", self, shortcut=QKeySequence.Open,
+                statusTip="Open a SC2Bank", triggered=self.openBank)
+        self.saveAct = QAction("&Save", self, shortcut=QKeySequence.Save, statusTip="Save a SC2Bank", triggered=self.saveBank)
+
+    def createApplicationWidgets(self):
         self.oldSigLabel = _label("Old signature:")
         self.oldSigText = _lineEdit(readonly=True, width=_SHA1WIDTH)
 
@@ -139,22 +162,9 @@ class DropSiteWindow(QWidget):
         self.bankNameLabel = _label("Bank Name:")
         self.bankNameText = _lineEdit(changed=self.nameChanged)
 
+    def createControlWidgets(self):
         self.dropArea = DropArea()
         self.dropArea.changedData.connect(self.droppedSC2Bank)
-
-        self.gridLayout = QGridLayout()
-        self.gridLayout.addWidget(self.oldSigLabel, 0, 0)
-        self.gridLayout.addWidget(self.oldSigText, 0, 1)
-        self.gridLayout.addWidget(self.newSigLabel, 1, 0)
-        self.gridLayout.addWidget(self.newSigText, 1, 1)
-        self.gridLayout.addWidget(self.fileNameLabel, 2, 0)
-        self.gridLayout.addWidget(self.fileNameText, 2, 1)
-        self.gridLayout.addWidget(self.authorIdLabel, 3, 0)
-        self.gridLayout.addWidget(self.authorIdText, 3, 1)
-        self.gridLayout.addWidget(self.userIdLabel, 4, 0)
-        self.gridLayout.addWidget(self.userIdText, 4, 1)
-        self.gridLayout.addWidget(self.bankNameLabel, 5, 0)
-        self.gridLayout.addWidget(self.bankNameText, 5, 1)
 
         self.clearButton = QPushButton("Clear")
         self.quitButton = QPushButton("Quit")
@@ -169,14 +179,24 @@ class DropSiteWindow(QWidget):
         self.clearButton.pressed.connect(self.clear)
         self.updateSignatureButton.pressed.connect(self.updateSignature)
 
-        mainLayout = QVBoxLayout()
-        mainLayout.addLayout(self.gridLayout)
-        mainLayout.addWidget(self.dropArea)
-        mainLayout.addWidget(self.buttonBox)
-        self.setLayout(mainLayout)
-
-        self.setWindowTitle(self.WINDOW_TITLE)
-        self.setMinimumSize(350, 500)        
+    def createLayout(self):
+        self.gridLayout = QGridLayout()
+        self.gridLayout.addWidget(self.oldSigLabel, 0, 0)
+        self.gridLayout.addWidget(self.oldSigText, 0, 1)
+        self.gridLayout.addWidget(self.newSigLabel, 1, 0)
+        self.gridLayout.addWidget(self.newSigText, 1, 1)
+        self.gridLayout.addWidget(self.fileNameLabel, 2, 0)
+        self.gridLayout.addWidget(self.fileNameText, 2, 1)
+        self.gridLayout.addWidget(self.authorIdLabel, 3, 0)
+        self.gridLayout.addWidget(self.authorIdText, 3, 1)
+        self.gridLayout.addWidget(self.userIdLabel, 4, 0)
+        self.gridLayout.addWidget(self.userIdText, 4, 1)
+        self.gridLayout.addWidget(self.bankNameLabel, 5, 0)
+        self.gridLayout.addWidget(self.bankNameText, 5, 1)
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.addLayout(self.gridLayout)
+        self.mainLayout.addWidget(self.dropArea)
+        self.mainLayout.addWidget(self.buttonBox)
 
     def clear(self):
         for widget in [self.newSigText, self.oldSigText, self.fileNameText,
@@ -228,6 +248,12 @@ class DropSiteWindow(QWidget):
         if self.model:
             self.model.update(name=self.bankNameText.text())
             self.newSigText.setText(self.model.calculate_signature())
+
+    def openBank(self):
+        pass
+
+    def saveBank(self):
+        pass
 
 
 class Model(object):
