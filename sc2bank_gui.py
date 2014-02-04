@@ -56,10 +56,12 @@ import sc2bank
 _font = QFont('Courier')
 _SHA1WIDTH = 350
 
+
 def _label(title):
     label = QLabel(title)
     label.adjustSize()
     return label
+
 
 def _lineEdit(readonly=False, width=None, changed=None):
     line = QLineEdit()
@@ -71,6 +73,7 @@ def _lineEdit(readonly=False, width=None, changed=None):
         line.setMinimumWidth(width)
     return line
 
+
 def _textEdit(readonly=False, height=None):
     text = QTextEdit()
     text.setFont(_font)
@@ -78,6 +81,32 @@ def _textEdit(readonly=False, height=None):
     if height is not None:
         text.setMaximumHeight(height)
     return text
+
+
+class DropArea(QLabel):
+
+    changedData = pyqtSignal(QMimeData)
+
+    def __init__(self):
+        super(DropArea, self).__init__()
+        self.setText('<Drop SC2Bank file here>')
+        self.setMinimumSize(200, 200)
+        self.setAutoFillBackground(True)
+        self.setBackgroundRole(QPalette.Dark)
+        self.setAlignment(Qt.AlignCenter)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        self.setBackgroundRole(QPalette.Highlight)
+        event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        event.acceptProposedAction()
+        self.setBackgroundRole(QPalette.Dark)
+        self.changedData.emit(event.mimeData())
+
+    def dragLeaveEvent(self, event):
+        self.setBackgroundRole(QPalette.Dark)
 
 
 class DropSiteWindow(QWidget):
@@ -91,15 +120,7 @@ class DropSiteWindow(QWidget):
         self.model = None
         self.createGUI()
 
-
-
     def createGUI(self):
-        self.changedData.connect(self.droppedSC2Bank)
-
-        self.setAcceptDrops(True)
-
-        self.setAutoFillBackground(True)
-
         self.oldSigLabel = _label("Old signature:")
         self.oldSigText = _lineEdit(readonly=True, width=_SHA1WIDTH)
 
@@ -118,11 +139,8 @@ class DropSiteWindow(QWidget):
         self.bankNameLabel = _label("Bank Name:")
         self.bankNameText = _lineEdit(changed=self.nameChanged)
 
-        self.dropArea = QLabel('<Drop SC2Bank file here>')
-        self.dropArea.setMinimumSize(200, 200)
-        self.dropArea.setAutoFillBackground(True)
-        self.dropArea.setBackgroundRole(QPalette.Dark)
-        self.dropArea.setAlignment(Qt.AlignCenter)
+        self.dropArea = DropArea()
+        self.dropArea.changedData.connect(self.droppedSC2Bank)
 
         self.gridLayout = QGridLayout()
         self.gridLayout.addWidget(self.oldSigLabel, 0, 0)
@@ -160,29 +178,12 @@ class DropSiteWindow(QWidget):
         self.setWindowTitle(self.WINDOW_TITLE)
         self.setMinimumSize(350, 500)        
 
-    def dragEnterEvent(self, event):
-        self.setBackgroundRole(QPalette.Highlight)
-        self.dropArea.setBackgroundRole(QPalette.Highlight)
-        event.acceptProposedAction()
-
-    def dropEvent(self, event):
-        event.acceptProposedAction()
-        self.setBackgroundRole(QPalette.Window)
-        self.dropArea.setBackgroundRole(QPalette.Dark)
-        self.changedData.emit(event.mimeData())
-
-    def dragLeaveEvent(self, event):
-        self.setBackgroundRole(QPalette.Window)
-        self.dropArea.setBackgroundRole(QPalette.Dark)
-
-
     def clear(self):
         for widget in [self.newSigText, self.oldSigText, self.fileNameText,
                        self.authorIdText, self.userIdText, self.bankNameText]:
             widget.setText('')
 
         self.model = None
-
 
     def updateSignature(self):
         if self.model:
@@ -230,6 +231,7 @@ class DropSiteWindow(QWidget):
 
 
 class Model(object):
+
     def __init__(self, file_):
         self.file = file_
 
@@ -265,8 +267,8 @@ class Model(object):
         with open(file_, 'w') as f:
             f.write(str.replace(self.contents, self.recorded_signature, signature))
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
