@@ -43,9 +43,9 @@
 #############################################################################
 
 
-from PyQt5.QtCore import pyqtSignal, QMimeData, Qt
-from PyQt5.QtGui import QPalette, QPixmap, QFont, QKeySequence
-from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QDialogButtonBox,
+from PyQt4.QtCore import pyqtSignal, QMimeData, Qt
+from PyQt4.QtGui import (QPalette, QPixmap, QFont, QKeySequence,
+    QAbstractItemView, QApplication, QDialogButtonBox,
         QFrame, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
         QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QTextEdit,
         QTreeWidget, QMenuBar, QMenu, QMainWindow, QAction)
@@ -230,7 +230,7 @@ class DropSiteWindow(QMainWindow):
         if len(urls) > 1:
             raise NotImplemented('Can only handle one file at once.')
 
-        fname = urls[0].path()
+        fname = str(urls[0].path())
 
         self.model = Model(fname)
         self.reflectModel()

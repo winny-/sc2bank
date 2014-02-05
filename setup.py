@@ -8,5 +8,4 @@ setup(name='sc2bank',
       author_email='sc2bank@fastmail.fm',
       license='MIT / BSD 3-clause',
       packages=['sc2bank'],
-      zip_safe=False,
-      extras_requires=['PyQt5'])
+      zip_safe=False)
