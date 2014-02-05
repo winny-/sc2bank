@@ -11,7 +11,6 @@ used as a program or to build other programs. Example usage:
 $ python sc2bank.py "$HOME/Library/Application Support/Blizzard/StarCraft II/Accounts/12345678/1-S2-1-1234567/Banks/1-S2-1-4337146/llIlIIlIlIllIllI.SC2Bank"
 """
 
-from __future__ import print_function
 from collections import namedtuple
 import hashlib
 import os
