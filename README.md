@@ -2,6 +2,8 @@
 
 Python module to sign StarCraft II bank files which are used to save stats in Arcade.
 
+![The GUI Module](http://i.imgur.com/bcZME95.png)
+
 # Installation
 ## Any platform
 1. Install PyQt4 for the GUI.
