@@ -13,8 +13,8 @@ Python module to sign StarCraft II bank files which are used to save stats in Ar
 
 # How to use
 ## From PyPi (Pip, Easy_install)
-* GUI: python -m sc2bank.gui
-* CLI: python -m sc2bank path/to/bank.SC2Bank
+* GUI: `python -m sc2bank.gui`
+* CLI: `python -m sc2bank path/to/bank.SC2Bank`
 
 ## From Prepackaged GUI Release:
 Unzip the file and double click on the EXE/APP file.
