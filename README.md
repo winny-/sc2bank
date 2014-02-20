@@ -1,5 +1,7 @@
 # sc2bank
 
+[![Build Status](https://travis-ci.org/winny-/sc2bank.png?branch=master)](https://travis-ci.org/winny-/sc2bank)
+
 Python module to sign StarCraft II bank files which are used to save stats in Arcade.
 
 ![The GUI Module](http://i.imgur.com/bcZME95.png)
