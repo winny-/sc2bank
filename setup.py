@@ -8,4 +8,5 @@ setup(name='sc2bank',
       author_email='sc2bank@fastmail.fm',
       license='MIT / BSD 3-clause',
       packages=['sc2bank'],
+      test_suite='sc2bank.test',
       zip_safe=False)
