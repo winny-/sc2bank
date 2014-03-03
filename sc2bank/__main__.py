@@ -15,7 +15,7 @@ if not os.path.isfile(fname):
     print('"{0}" is not a file.'.format(fname))
     usage(1)
 
-signature, recorded_signature = sign_file(fname)
+signature, recorded_signature = sc2bank.sign_file(fname)
 print('Calculated signature: {0}'.format(signature))
 if recorded_signature is None:
     recorded_signature = '(No signature in XML document.)'

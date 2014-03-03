@@ -1,4 +1,5 @@
-from sc2bank import *
+import os
+from sc2bank import Section, Key, inspect_file_path, sign, parse
 import unittest
 
 
