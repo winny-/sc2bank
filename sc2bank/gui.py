@@ -46,9 +46,9 @@
 from PyQt4.QtCore import pyqtSignal, QMimeData, Qt
 from PyQt4.QtGui import (QPalette, QPixmap, QFont, QKeySequence,
     QAbstractItemView, QApplication, QDialogButtonBox,
-        QFrame, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
-        QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QTextEdit,
-        QTreeWidget, QMenuBar, QMenu, QMainWindow, QAction)
+    QFrame, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QTextEdit,
+    QTreeWidget, QMenuBar, QMenu, QMainWindow, QAction)
 import sc2bank
 
 
@@ -262,7 +262,7 @@ class Model(object):
     def __init__(self, file_):
         self.file = file_
 
-        info = sc2bank.inspect_file_path(file_)
+        info = sc2bank.inspect_path(file_)
         self.author_id = info.author_id
         self.user_id = info.user_id
         self.name = info.name
@@ -270,7 +270,7 @@ class Model(object):
         with open(file_, 'r') as f:
             self.contents = f.read()
 
-        self.bank, self.recorded_signature = sc2bank.parse(self.contents, from_string=True)
+        self.bank, self.recorded_signature = sc2bank.parse_string(self.contents)
 
     def calculate_signature(self):
         return sc2bank.sign(self.author_id, self.user_id, self.name, self.bank)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Validate SC2Bank XML document signatures.
 
 This module parses and validates SC2Bank files used to store player
@@ -8,13 +6,15 @@ to track player unlocks in the Arcade. Armed with a text editor, one
 may artificially achieve player unlocks. This module can be either
 used as a program or to build other programs. Example usage:
 
-$ python sc2bank.py "$HOME/Library/Application Support/Blizzard/StarCraft II/Accounts/12345678/1-S2-1-1234567/Banks/1-S2-1-4337146/llIlIIlIlIllIllI.SC2Bank"
+$ python sc2bank.py "$HOME/Library/Application Support/Blizzard/StarCraft II\
+/Accounts/12345678/1-S2-1-1234567/Banks/1-S2-1-4337146/llIlIIlIlIllIllI.SC2Bank"
 """
 
 from collections import namedtuple
 import hashlib
 import os
 import re
+from StringIO import StringIO
 import xml.etree.ElementTree as ET
 
 
@@ -60,8 +60,20 @@ class Key(object):
 PathInfo = namedtuple('PathInfo', ['author_id', 'user_id', 'name'])
 
 
-def inspect_file_path(path):
-    """Inspect a SC2Bank file's path for metadata necessary to generate a signature.
+def safe_list_get(l, index, default=None):
+    """
+    Get value for index in l. If index is out of range, return default
+    instead.
+    """
+    try:
+        return l[index]
+    except IndexError:
+        return default
+
+
+def inspect_path(path):
+    """
+    Inspect a SC2Bank file's path for metadata necessary to generate a signature.
 
     path -- Path to the SC2Bank file
 
@@ -71,8 +83,10 @@ def inspect_file_path(path):
     """
     elements = os.path.dirname(path).split(os.sep)
     id_ = re.compile('^[0-9]-S2-[0-9]-[0-9]{6,7}$')
+    author_element = safe_list_get(elements, -1, '')
+    user_element = safe_list_get(elements, -3, '')
     author_id, user_id = map(lambda e: e if re.match(id_, e) else None,
-                             [elements[-1], elements[-3]])
+                             [author_element, user_element])
     found = re.match('^(.+)(\.SC2Bank)$', os.path.basename(path))
     if found:
         bank_name = found.group(1)
@@ -81,48 +95,17 @@ def inspect_file_path(path):
     return PathInfo(author_id, user_id, bank_name)
 
 
-def sign_file(fname, author_id=None, user_id=None, name=None):
-    """Sign a SC2Bank file.
-
-    fname     -- Path to the SC2Bank file
-    author_id -- Author ID, e.g. "1-S2-1-1234567"
-                 (default None, derived from last directory element)
-    user_id   -- User ID, e.g. "1-S2-1-1234567" (default None,
-                 derived from third to last directory element)
-    name      -- SC2Bank filename without .SC2Bank or the file's path
-                 (default None)
-
-    Returns:
-    Tuple of the calculated signature and the signature recorded in
-    the XML document.
+def parse(fname):
     """
-    info = inspect_file_path(fname)
-    if not author_id:
-        author_id = info.author_id
-    if not user_id:
-        user_id = info.user_id
-    if not name:
-        name = info.name
+    Parse a SC2Bank file.
 
-    bank, signature = parse(fname)
-
-    return sign(author_id, user_id, name, bank), signature
-
-
-def parse(fname, from_string=False):
-    """Parse a SC2Bank file.
-
-    fname       -- Path to the SC2Bank file
-    from_string -- Whether to parse from a string instead of a file.
+    fname -- Path to the SC2Bank file
 
     Returns:
     Tuple of the parsed Bank element and the signature recorded in
     the XML document.
     """
-    if from_string:
-        root = ET.fromstring(fname)
-    else:
-        root = ET.parse(fname).getroot()
+    root = ET.parse(fname).getroot()
     if root.tag != 'Bank':
         raise RuntimeError('Invalid root tag: '+root.tag)
     bank = []
@@ -148,8 +131,18 @@ def parse(fname, from_string=False):
         signature = None
     return bank, signature
 
+
+def parse_string(xml_string):
+    """Parse SC2Bank from a string."""
+    buf = StringIO(xml_string)
+    parsed_sc2bank = parse(buf)
+    buf.close()
+    return parsed_sc2bank
+
+
 def sign(author_id, user_id, name, bank):
-    """Sign a SC2Bank file representation.
+    """
+    Sign a SC2Bank file representation.
 
     author_id -- Author ID, e.g. "1-S2-1-1234567"
     user_id   -- User ID, e.g. "1-S2-1-1234567"
@@ -167,3 +160,32 @@ def sign(author_id, user_id, name, bank):
         for key in sorted(section.keys):
             update([key.name, 'Value', key.type, key.value])
     return h.hexdigest().upper()
+
+
+def sign_file(fname, author_id=None, user_id=None, name=None):
+    """Sign a SC2Bank file.
+
+    fname     -- Path to the SC2Bank file
+    author_id -- Author ID, e.g. "1-S2-1-1234567"
+                 (default None, derived from last directory element)
+    user_id   -- User ID, e.g. "1-S2-1-1234567" (default None,
+                 derived from third to last directory element)
+    name      -- SC2Bank filename without .SC2Bank or the file's path
+                 (default None)
+
+    Returns:
+    Tuple of the calculated signature and the signature recorded in
+    the XML document.
+    """
+    if None in (author_id, user_id, name):
+        info = inspect_path(fname)
+        if author_id is None:
+            author_id = info.author_id
+        if user_id is None:
+            user_id = info.user_id
+        if name is None:
+            name = info.name
+
+    bank, signature = parse(fname)
+
+    return sign(author_id, user_id, name, bank), signature
