@@ -1,7 +1,10 @@
 import os
 from .. import (Section, Key, inspect_path, sign, sign_file, parse,
     parse_string, safe_list_get)
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import unittest
 
 

@@ -14,7 +14,10 @@ from collections import namedtuple
 import hashlib
 import os
 import re
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import xml.etree.ElementTree as ET
 
 
