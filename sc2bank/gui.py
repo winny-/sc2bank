@@ -145,7 +145,7 @@ class DropSiteWindow(QMainWindow):
         self.saveAct = QAction("&Save", self, shortcut=QKeySequence.Save, statusTip="Save a SC2Bank", triggered=self.saveBank)
 
     def createApplicationWidgets(self):
-        self.oldSigLabel = _label("Old signature:")
+        self.oldSigLabel = _label("Recorded signature:")
         self.oldSigText = _lineEdit(readonly=True, width=_SHA1WIDTH)
 
         self.newSigLabel = _label("New signature:")
@@ -169,7 +169,7 @@ class DropSiteWindow(QMainWindow):
 
         self.clearButton = QPushButton("Clear")
         self.quitButton = QPushButton("Quit")
-        self.updateSignatureButton = QPushButton("Update Signature")
+        self.updateSignatureButton = QPushButton("Overwrite Signature")
 
         self.buttonBox = QDialogButtonBox()
         self.buttonBox.addButton(self.clearButton, QDialogButtonBox.ActionRole)
@@ -209,7 +209,6 @@ class DropSiteWindow(QMainWindow):
     def updateSignature(self):
         if self.model:
             self.model.save()
-            self.model = Model(self.model.file)
             self.reflectModel()
 
     def reflectModel(self):
@@ -238,17 +237,17 @@ class DropSiteWindow(QMainWindow):
     def authorChanged(self, event):
         if self.model:
             self.model.update(author_id=self.authorIdText.text())
-            self.newSigText.setText(self.model.calculate_signature())
+            self.reflectModel()
 
     def userChanged(self, event):
         if self.model:
             self.model.update(user_id=self.userIdText.text())
-            self.newSigText.setText(self.model.calculate_signature())
+            self.reflectModel()
 
     def nameChanged(self, event):
         if self.model:
             self.model.update(name=self.bankNameText.text())
-            self.newSigText.setText(self.model.calculate_signature())
+            self.reflectModel()
 
     def openBank(self):
         pass
@@ -263,9 +262,9 @@ class Model(object):
         self.file = file_
 
         info = sc2bank.inspect_path(file_)
-        self.author_id = info.author_id
-        self.user_id = info.user_id
-        self.name = info.name
+        self.author_id = info.author_id or ''
+        self.user_id = info.user_id or ''
+        self.name = info.name or ''
 
         with open(file_, 'r') as f:
             self.contents = f.read()
@@ -273,16 +272,18 @@ class Model(object):
         self.bank, self.recorded_signature = sc2bank.parse_string(self.contents)
 
     def calculate_signature(self):
+        if '' in (self.author_id, self.user_id, self.name, self.bank):
+            return ''
         return sc2bank.sign(self.author_id, self.user_id, self.name, self.bank)
 
     def update(self, **changes):
         for k, v in changes.iteritems():
             if k == 'author_id':
-                self.author_id = v
+                self.author_id = str(v)
             if k == 'user_id':
-                self.user_id = v
+                self.user_id = str(v)
             if k == 'name':
-                self.name = v
+                self.name = str(v)
 
     def save(self, file_=None):
         if file_ is None:
@@ -292,7 +293,8 @@ class Model(object):
             raise RuntimeError('There are more than one occurence of the hash, not replacing.')
             return
         with open(file_, 'w') as f:
-            f.write(str.replace(self.contents, self.recorded_signature, signature))
+            f.write(self.contents.replace(self.recorded_signature, signature))
+        self.recorded_signature = signature
 
 
 if __name__ == '__main__':
