@@ -55,6 +55,22 @@ class Test(unittest.TestCase):
     def test_parse(self):
         mock_file = StringIO(self.contents)
         self.assertEquals(parse(mock_file), (self.bank, self.signature))
+        self.assertRaises(RuntimeError, parse, StringIO('<someelement/>'))
+        self.assertRaises(RuntimeError, parse,
+            StringIO("""<Bank>
+                            <Section name="bogus">
+                                <Key name="TestKey">
+                                    <Value int="5" string="hello"/>
+                                </Key>
+                            </Section>
+                        </Bank>"""))
+        self.assertEquals(parse(StringIO("""<Bank>
+                                                <Section name="bogus">
+                                                    <Key name="TestKey">
+                                                        <Value int="5"/>
+                                                    </Key>
+                                                </Section>
+                                            </Bank>""")), ([Section('bogus', [Key('TestKey', 'int', '5')])], None))
 
     def test_parse_string(self):
         self.assertEquals(parse_string(self.contents), (self.bank, self.signature))
