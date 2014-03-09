@@ -2,4 +2,6 @@ language: python
 python:
   - "3.3"
   - "2.7"
-script: nosetests
+install: pip install coveralls coverage
+script: coverage run --source=sc2bank -m nose
+after_success: coveralls
