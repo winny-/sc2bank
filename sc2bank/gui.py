@@ -278,6 +278,8 @@ class Model(object):
 
     def update(self, **changes):
         for k, v in changes.iteritems():
+            # Create regular strings from QStrings. QStrings are missing
+            # important Pythonic methods.
             if k == 'author_id':
                 self.author_id = str(v)
             if k == 'user_id':

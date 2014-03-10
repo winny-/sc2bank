@@ -7,7 +7,8 @@ may artificially achieve player unlocks. This module can be either
 used as a program or to build other programs. Example usage:
 
 $ python sc2bank.py "$HOME/Library/Application Support/Blizzard/StarCraft II\
-/Accounts/12345678/1-S2-1-1234567/Banks/1-S2-1-4337146/llIlIIlIlIllIllI.SC2Bank"
+/Accounts/12345678/1-S2-1-1234567/Banks/1-S2-1-4337146/\
+llIlIIlIlIllIllI.SC2Bank"
 """
 
 from collections import namedtuple
@@ -17,7 +18,7 @@ import re
 try:
     from StringIO import StringIO
 except ImportError:
-    from io import StringIO
+    from io import StringIO  # Python 3.x
 import xml.etree.ElementTree as ET
 
 
@@ -76,21 +77,23 @@ def safe_list_get(l, index, default=None):
 
 def inspect_path(path):
     """
-    Inspect a SC2Bank file's path for metadata necessary to generate a signature.
+    Inspect a SC2Bank file's path for metadata necessary to generate a
+    signature.
 
     path -- Path to the SC2Bank file
 
     Returns:
-    Tuple of the Author ID, User ID, and Bank name. Each element may be None if
-    the information could not be deduced.
+    Tuple of the Author ID, User ID, and Bank name. Each element may be None
+    if the information could not be deduced.
     """
     elements = os.path.dirname(path).split(os.sep)
     id_ = re.compile('^[0-9]-S2-[0-9]-[0-9]{6,7}$')
-    author_element = safe_list_get(elements, -1, '')
-    user_element = safe_list_get(elements, -3, '')
+    # Author ID & User ID are no use if in lower case.
+    author_element = safe_list_get(elements, -1, '').upper()
+    user_element = safe_list_get(elements, -3, '').upper()
     author_id, user_id = map(lambda e: e if re.match(id_, e) else None,
                              [author_element, user_element])
-    found = re.match('^(.+)(\.SC2Bank)$', os.path.basename(path))
+    found = re.match('^(.+)(\.SC2Bank)$', os.path.basename(path), re.I)
     if found:
         bank_name = found.group(1)
     else:
@@ -116,14 +119,14 @@ def parse(fname):
         keys = []
         for key in section.findall('./Key'):
             value = key.find('./Value')
-            # Do not look for "int" or "string" attributes. Instead get the only
-            # attribute's name or raise an exception. This future-proofs for unknown
-            # value types.
+            # Do not look for "int" or "string" attributes. Instead get only
+            # the attribute's name or raise an exception. This future-proofs
+            # for unknown value types.
             if len(value.attrib) == 1:
                 value_type = list(value.attrib.keys())[0]
             else:
-                raise RuntimeError('Unknown value type in {}'
-                                   .format(ET.tostring(value).rstrip().decode('UTF-8')))
+                element = ET.tostring(value).rstrip().decode('UTF-8')
+                raise RuntimeError('Unknown value type in {}'.format(element))
             key = Key(key.attrib['name'], value_type, value.attrib[value_type])
             keys.append(key)
         bank.append(Section(section.attrib['name'], keys))
