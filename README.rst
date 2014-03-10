@@ -14,7 +14,7 @@
 
 Python module to sign StarCraft II bank files which are used to save stats in Arcade.
 
-.. image:: https://i.imgur.com/bcZME95.png
+.. image:: https://i.imgur.com/z5cmEz7.png
    :alt: The Gui Module
 
 Installation
@@ -26,8 +26,8 @@ Any platform
 
 Prepackaged GUI Releases
 ------------------------
-* Mac 0.1 https://www.dropbox.com/s/6z7i5k0o46wkvy8/sc2bank.app.zip
-* Windows 0.1 https://www.dropbox.com/s/frque1cgz8sp2wy/sc2bank.exe.zip
+* Mac 0.2 https://www.dropbox.com/s/co1r0dtdq2lb1d6/sc2bank.app.zip
+* Windows 0.2 https://www.dropbox.com/s/qo41t2dod7kpzny/sc2bank.exe.zip
 
 How to use
 ==========

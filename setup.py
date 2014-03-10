@@ -5,7 +5,7 @@ with open('README.rst', 'r') as f:
 
 setup(
     name='sc2bank',
-    version='0.2.dev',
+    version='0.2',
     description='Validate SC2Bank XML document signatures.',
     long_description=long_description,
     classifiers=[

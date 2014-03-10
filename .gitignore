@@ -7,3 +7,4 @@ htmlcov
 .coverage
 .DS_Store
 venv
+sc2bank.spec
