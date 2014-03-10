@@ -2,6 +2,6 @@ language: python
 python:
   - "3.3"
   - "2.7"
-install: pip install coveralls coverage
+install: pip install coveralls coverage mock
 script: coverage run --source=sc2bank -m nose
 after_success: coveralls

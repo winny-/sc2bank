@@ -1,10 +1,11 @@
 import os
 from .. import (Section, Key, inspect_path, sign, sign_file, parse,
-    parse_string, safe_list_get)
+    parse_string, safe_list_get, PathInfo)
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
+from mock import patch
 import unittest
 
 
@@ -94,6 +95,11 @@ class Test(unittest.TestCase):
     def test_sign_file(self):
         mock_file = StringIO(self.contents)
         self.assertEquals(sign_file(mock_file, self.author_id, self.user_id, self.bank_name), (self.signature, self.signature))
+        with patch('sc2bank.inspect_path') as mock_inspect_path:
+            mock_file.seek(0)
+            mock_inspect_path.return_value = PathInfo(self.author_id, self.user_id, self.bank_name)
+            self.assertEquals(sign_file(mock_file), (self.signature, self.signature))
+
 
 
 if __name__ == '__main__':
