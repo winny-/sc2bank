@@ -229,7 +229,8 @@ class DropSiteWindow(QMainWindow):
         if len(urls) > 1:
             raise NotImplemented('Can only handle one file at once.')
 
-        fname = str(urls[0].path())
+        # http://stackoverflow.com/a/8580720/2720026
+        fname = str(urls[0].toLocalFile().toLocal8Bit().data())
 
         self.model = Model(fname)
         self.reflectModel()
