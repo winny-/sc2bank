@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='sc2bank',
-      version='0.1',
+      version='0.2-dev',
       description='Validate SC2Bank XML document signatures.',
       url='https://github.com/winny-/sc2bank',
       author='Winston Weinert',
