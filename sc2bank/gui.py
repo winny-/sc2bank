@@ -44,11 +44,9 @@
 
 
 from PyQt4.QtCore import pyqtSignal, QMimeData, Qt
-from PyQt4.QtGui import (QPalette, QPixmap, QFont, QKeySequence,
-    QAbstractItemView, QApplication, QDialogButtonBox,
-    QFrame, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QTextEdit,
-    QTreeWidget, QMenuBar, QMenu, QMainWindow, QAction)
+from PyQt4.QtGui import QPalette, QFont, QKeySequence, QApplication,        \
+    QDialogButtonBox, QLabel, QPushButton, QVBoxLayout, QWidget, QLineEdit, \
+    QGridLayout, QTextEdit, QMainWindow, QAction
 from . import sc2bank
 
 
@@ -140,9 +138,16 @@ class DropSiteWindow(QMainWindow):
         pass
 
     def createActions(self):
-        self.openAct = QAction("&Open", self, shortcut=QKeySequence.Open,
-                statusTip="Open a SC2Bank", triggered=self.openBank)
-        self.saveAct = QAction("&Save", self, shortcut=QKeySequence.Save, statusTip="Save a SC2Bank", triggered=self.saveBank)
+        self.openAct = QAction("&Open",
+                               self,
+                               shortcut=QKeySequence.Open,
+                               statusTip="Open a SC2Bank",
+                               triggered=self.openBank)
+        self.saveAct = QAction("&Save",
+                               self,
+                               shortcut=QKeySequence.Save,
+                               statusTip="Save a SC2Bank",
+                               triggered=self.saveBank)
 
     def createApplicationWidgets(self):
         self.oldSigLabel = _label("Recorded signature:")
@@ -173,7 +178,8 @@ class DropSiteWindow(QMainWindow):
 
         self.buttonBox = QDialogButtonBox()
         self.buttonBox.addButton(self.clearButton, QDialogButtonBox.ActionRole)
-        self.buttonBox.addButton(self.updateSignatureButton, QDialogButtonBox.ApplyRole)
+        self.buttonBox.addButton(self.updateSignatureButton,
+                                 QDialogButtonBox.ApplyRole)
         self.buttonBox.addButton(self.quitButton, QDialogButtonBox.RejectRole)
 
         self.quitButton.pressed.connect(self.close)
@@ -218,7 +224,8 @@ class DropSiteWindow(QMainWindow):
         self.userIdText.setText(self.model.user_id)
         self.bankNameText.setText(self.model.name)
         self.fileNameText.setText(self.model.file)
-        self.setWindowTitle(''.join([self.WINDOW_TITLE + ': ', self.model.name]))
+        self.setWindowTitle(''.join([self.WINDOW_TITLE + ': ',
+                                     self.model.name]))
 
     def droppedSC2Bank(self, mimeData=None):
         if mimeData is None or not mimeData.hasUrls():
@@ -270,7 +277,8 @@ class Model(object):
         with open(file_, 'r') as f:
             self.contents = f.read()
 
-        self.bank, self.recorded_signature = sc2bank.parse_string(self.contents)
+        bank, sig = sc2bank.parse_string(self.contents)
+        self.bank, self.recorded_signature = bank, sig
 
     def calculate_signature(self):
         if '' in (self.author_id, self.user_id, self.name, self.bank):
@@ -293,7 +301,8 @@ class Model(object):
             file_ = self.file
         signature = self.calculate_signature()
         if self.contents.count(self.recorded_signature) != 1:
-            raise RuntimeError('There are more than one occurence of the hash, not replacing.')
+            raise RuntimeError('There are more than one occurence of the hash,'
+                               ' not replacing.')
             return
         with open(file_, 'w') as f:
             f.write(self.contents.replace(self.recorded_signature, signature))
@@ -307,4 +316,3 @@ if __name__ == '__main__':
     window = DropSiteWindow()
     window.show()
     sys.exit(app.exec_())
-

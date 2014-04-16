@@ -1,6 +1,6 @@
 import os
-from ..sc2bank import (Section, Key, inspect_path, sign, sign_file, parse,
-    parse_string, safe_list_get, PathInfo)
+from ..sc2bank import Section, Key, inspect_path, sign, sign_file, parse, \
+    parse_string, safe_list_get, PathInfo
 try:
     from StringIO import StringIO
 except ImportError:
@@ -51,13 +51,19 @@ class Test(unittest.TestCase):
         self.assertEquals(inspect_path(''), (None, None, None))
 
     def test_sign(self):
-        self.assertEquals(sign(self.author_id, self.user_id, self.bank_name, self.bank), self.signature)
+        self.assertEquals(sign(self.author_id,
+                               self.user_id,
+                               self.bank_name,
+                               self.bank),
+                          self.signature)
 
     def test_parse(self):
         mock_file = StringIO(self.contents)
         self.assertEquals(parse(mock_file), (self.bank, self.signature))
         self.assertRaises(RuntimeError, parse, StringIO('<someelement/>'))
-        self.assertRaises(RuntimeError, parse,
+        self.assertRaises(
+            RuntimeError,
+            parse,
             StringIO("""<Bank>
                             <Section name="bogus">
                                 <Key name="TestKey">
@@ -71,10 +77,15 @@ class Test(unittest.TestCase):
                                                         <Value int="5"/>
                                                     </Key>
                                                 </Section>
-                                            </Bank>""")), ([Section('bogus', [Key('TestKey', 'int', '5')])], None))
+                                            </Bank>""")),
+                          ([Section('bogus', [
+                            Key('TestKey', 'int', '5')
+                            ])],
+                           None))
 
     def test_parse_string(self):
-        self.assertEquals(parse_string(self.contents), (self.bank, self.signature))
+        self.assertEquals(parse_string(self.contents),
+                          (self.bank, self.signature))
 
     def test_Section(self):
         s1, s2 = self.bank[0], self.bank[1]
@@ -94,12 +105,18 @@ class Test(unittest.TestCase):
 
     def test_sign_file(self):
         mock_file = StringIO(self.contents)
-        self.assertEquals(sign_file(mock_file, self.author_id, self.user_id, self.bank_name), (self.signature, self.signature))
+        self.assertEquals(sign_file(mock_file,
+                                    self.author_id,
+                                    self.user_id,
+                                    self.bank_name),
+                          (self.signature, self.signature))
         with patch('sc2bank.sc2bank.inspect_path') as mock_inspect_path:
             mock_file.seek(0)
-            mock_inspect_path.return_value = PathInfo(self.author_id, self.user_id, self.bank_name)
-            self.assertEquals(sign_file(mock_file), (self.signature, self.signature))
-
+            mock_inspect_path.return_value = PathInfo(self.author_id,
+                                                      self.user_id,
+                                                      self.bank_name)
+            self.assertEquals(sign_file(mock_file),
+                              (self.signature, self.signature))
 
 
 if __name__ == '__main__':

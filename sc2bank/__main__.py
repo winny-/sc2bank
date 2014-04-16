@@ -3,6 +3,7 @@ import os
 from . import sc2bank
 import sys
 
+
 def usage(v):
     print('Usage: {0} path/to/Starcraft/BankFile.SC2Bank'.format(sys.argv[0]))
     sys.exit(v)
