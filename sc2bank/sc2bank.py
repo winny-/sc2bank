@@ -1,4 +1,5 @@
-"""Validate SC2Bank XML document signatures.
+"""
+Validate SC2Bank XML document signatures.
 
 This module parses and validates SC2Bank files used to store player
 data associated with a StarCraft II map. SC2Bank files are utilized
@@ -91,8 +92,8 @@ def inspect_path(path):
     # Author ID & User ID are no use if in lower case.
     author_element = safe_list_get(elements, -1, '').upper()
     user_element = safe_list_get(elements, -3, '').upper()
-    author_id, user_id = map(lambda e: e if re.match(id_, e) else None,
-                             [author_element, user_element])
+    author_id, user_id = [e if re.match(id_, e) else None
+                          for e in (author_element, user_element)]
     found = re.match('^(.+)(\.SC2Bank)$', os.path.basename(path), re.I)
     if found:
         bank_name = found.group(1)
@@ -113,7 +114,7 @@ def parse(fname):
     """
     root = ET.parse(fname).getroot()
     if root.tag != 'Bank':
-        raise RuntimeError('Invalid root tag: '+root.tag)
+        raise RuntimeError('Invalid root tag: ' + root.tag)
     bank = []
     for section in root.findall('./Section'):
         keys = []
