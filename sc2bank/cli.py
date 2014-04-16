@@ -2,23 +2,39 @@ from __future__ import print_function
 import os
 from . import sc2bank
 import sys
-
-
-def usage(v):
-    print('Usage: {0} path/to/Starcraft/BankFile.SC2Bank'.format(sys.argv[0]))
-    sys.exit(v)
+import argparse
 
 
 def main():
-    if len(sys.argv) != 2 or sys.argv[1].startswith('-'):
-        usage(0)
+    parser = argparse.ArgumentParser(description='Verify a SC2Bank signature.')
+    parser.add_argument('--userid',
+                        '-u',
+                        default=None,
+                        help='User ID to verify the SC2Bank with')
+    parser.add_argument('--authorid',
+                        '-a',
+                        default=None,
+                        help='Author ID to verify the SC2Bank with')
+    parser.add_argument('--bankname',
+                        '-b',
+                        default=None,
+                        help='SC2Bank name to verify with (is usually the '
+                             'filename without the extension)')
+    parser.add_argument('sc2bank',
+                        metavar='SC2BANK',
+                        help='Path of the SC2Bank to verify')
+    args = parser.parse_args()
 
-    fname = sys.argv[1]
+    fname = args.sc2bank
     if not os.path.isfile(fname):
-        print('"{0}" is not a file.'.format(fname))
-        usage(1)
+        sys.stderr.write('"{0}" is not a file.\n'.format(fname))
+        parser.print_help()
+        sys.exit(2)
 
-    signature, recorded_signature = sc2bank.sign_file(fname)
+    signature, recorded_signature = sc2bank.sign_file(fname,
+                                                      author_id=args.authorid,
+                                                      user_id=args.userid,
+                                                      name=args.bankname)
     print('Calculated signature: {0}'.format(signature))
     if recorded_signature is None:
         recorded_signature = '(No signature in XML document.)'
