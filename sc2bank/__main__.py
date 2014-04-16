@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-import sc2bank
+from . import sc2bank
 import sys
 
 def usage(v):

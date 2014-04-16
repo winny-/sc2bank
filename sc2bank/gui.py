@@ -49,7 +49,7 @@ from PyQt4.QtGui import (QPalette, QPixmap, QFont, QKeySequence,
     QFrame, QLabel, QPushButton, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QTextEdit,
     QTreeWidget, QMenuBar, QMenu, QMainWindow, QAction)
-import sc2bank
+from . import sc2bank
 
 
 _font = QFont('Courier')
