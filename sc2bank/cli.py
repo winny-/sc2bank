@@ -26,19 +26,34 @@ def main():
     args = parser.parse_args()
 
     fname = args.sc2bank
-    if not os.path.isfile(fname):
-        sys.stderr.write('"{0}" is not a file.\n'.format(fname))
+    author_id, user_id, bank_name = args.authorid, args.userid, args.bankname
+    if fname == '-':
+        if None in (author_id, user_id, bank_name):
+            sys.stderr.write('Error: Must specify --userid, --authorid, and '
+                             '--bankname to sign SC2Bank from stdin.\n\n')
+            parser.print_help()
+            sys.exit(2)
+        signature, recorded_signature = sc2bank.sign_string(
+            sys.stdin.read(),
+            author_id=args.authorid,
+            user_id=args.userid,
+            name=args.bankname
+        )
+    elif os.path.isfile(fname):
+        signature, recorded_signature = sc2bank.sign_file(
+            fname,
+            author_id=args.authorid,
+            user_id=args.userid,
+            name=args.bankname
+        )
+    else:
+        sys.stderr.write('Error: "{0}" is not a file.\n\n'.format(fname))
         parser.print_help()
         sys.exit(2)
 
-    signature, recorded_signature = sc2bank.sign_file(fname,
-                                                      author_id=args.authorid,
-                                                      user_id=args.userid,
-                                                      name=args.bankname)
     print('Calculated signature: {0}'.format(signature))
-    if recorded_signature is None:
-        recorded_signature = '(No signature in XML document.)'
-    print('Recorded signature:   {0}'.format(recorded_signature))
+    print('Recorded signature:   {0}'
+          .format(recorded_signature or '(No signature in XML document.)'))
     if signature != recorded_signature:
         print('Signatures are NOT equal!')
         sys.exit(1)

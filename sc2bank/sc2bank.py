@@ -170,7 +170,8 @@ def sign(author_id, user_id, name, bank):
 
 
 def sign_file(fname, author_id=None, user_id=None, name=None):
-    """Sign a SC2Bank file.
+    """
+    Sign a SC2Bank file.
 
     fname     -- Path to the SC2Bank file
     author_id -- Author ID, e.g. "1-S2-1-1234567"
@@ -194,5 +195,23 @@ def sign_file(fname, author_id=None, user_id=None, name=None):
             name = info.name
 
     bank, signature = parse(fname)
+
+    return sign(author_id, user_id, name, bank), signature
+
+
+def sign_string(xml_string, author_id, user_id, name):
+    """
+    Sign a SC2Bank from a string.
+
+    xml_string -- SC2Bank string to sign
+    author_id  -- Author ID, e.g. "1-S2-1-1234567"
+    user_id    -- User ID, e.g. "1-S2-1-1234567"
+    name       -- SC2Bank filename without .SC2Bank or the file's path
+
+    Returns:
+    Tuple of the calculated signature and the signature recorded in
+    the XML document.
+    """
+    bank, signature = parse_string(xml_string)
 
     return sign(author_id, user_id, name, bank), signature
