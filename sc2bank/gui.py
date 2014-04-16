@@ -315,4 +315,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = DropSiteWindow()
     window.show()
+    window.raise_()
     sys.exit(app.exec_())
