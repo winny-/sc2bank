@@ -1,7 +1,14 @@
 language: python
 python:
-  - "3.3"
-  - "2.7"
+- '3.3'
+- '2.7'
 install: pip install coveralls coverage mock
 script: coverage run --source=sc2bank -m nose
 after_success: coveralls
+deploy:
+  provider: pypi
+  user: winny
+  password:
+    secure: NwHQEvk82s982OqZC7b4WZQEhY4aIbvjg9+5dtikR1Mj41CZkPY8Nu/zzsa668fMQxAI2Xk4DiYfV4Ui5qnLjw+VW3oZ+j4L4voUG3hRUN2nmnmzsraL/M1/WGf7CL+BFWgNAMFVIWpLVv7RfpK86IF+DoJP/j+3tj8jr2KEt9M=
+  on:
+    tags: true
