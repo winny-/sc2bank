@@ -5,7 +5,7 @@ import sys
 import argparse
 
 
-def main():
+def parse_args(args):
     parser = argparse.ArgumentParser(description='Verify a SC2Bank signature.')
     parser.add_argument('--userid',
                         '-u',
@@ -23,10 +23,15 @@ def main():
     parser.add_argument('sc2bank',
                         metavar='SC2BANK',
                         help='Path of the SC2Bank to verify')
-    args = parser.parse_args()
+    return parser.parse_args(args), parser
+
+
+def main(args):
+    args, parser = parse_args(args)
 
     fname = args.sc2bank
     author_id, user_id, bank_name = args.authorid, args.userid, args.bankname
+
     if fname == '-':
         if None in (author_id, user_id, bank_name):
             sys.stderr.write('Error: Must specify --userid, --authorid, and '
@@ -60,4 +65,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
