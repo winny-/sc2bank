@@ -1,6 +1,6 @@
 import os
-from ..sc2bank import Section, Key, inspect_path, sign, sign_file, parse, \
-    parse_string, safe_list_get, PathInfo
+from ..sc2bank import Section, Key, inspect_path, sign, sign_file, \
+    sign_string, parse, parse_string, safe_list_get, PathInfo
 try:
     from StringIO import StringIO
 except ImportError:
@@ -117,6 +117,13 @@ class Test(unittest.TestCase):
                                                       self.bank_name)
             self.assertEquals(sign_file(mock_file),
                               (self.signature, self.signature))
+
+    def test_sign_string(self):
+        self.assertEquals(sign_string(self.contents,
+                                      self.author_id,
+                                      self.user_id,
+                                      self.bank_name),
+                          (self.signature, self.signature))
 
 
 if __name__ == '__main__':
