@@ -48,6 +48,7 @@ from PyQt4.QtGui import QPalette, QFont, QKeySequence, QApplication,        \
     QDialogButtonBox, QLabel, QPushButton, QVBoxLayout, QWidget, QLineEdit, \
     QGridLayout, QTextEdit, QMainWindow, QAction
 from . import sc2bank
+import sys
 
 
 _font = QFont('Courier')
@@ -309,11 +310,13 @@ class Model(object):
         self.recorded_signature = signature
 
 
-if __name__ == '__main__':
-    import sys
-
+def main():
     app = QApplication(sys.argv)
     window = DropSiteWindow()
     window.show()
     window.raise_()
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
