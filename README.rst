@@ -5,7 +5,7 @@
 .. image:: https://travis-ci.org/winny-/sc2bank.png?branch=master
    :target: https://travis-ci.org/winny-/sc2bank
    :alt: Build Status
-.. image:: https://pypip.in/v/sc2bank/badge.png
+.. image:: https://img.shields.io/pypi/v/sc2bank.svg
    :target: https://pypi.python.org/pypi/sc2bank
    :alt: Latest PyPi Package
 .. image:: https://coveralls.io/repos/winny-/sc2bank/badge.png?branch=master
