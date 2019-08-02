@@ -11,6 +11,8 @@
 .. image:: https://coveralls.io/repos/winny-/sc2bank/badge.png?branch=master
    :target: https://coveralls.io/r/winny-/sc2bank?branch=master
    :alt: Coverage Status
+   
+Note: This project is in archive mode.
 
 Python module to sign StarCraft II bank files which are used to save stats in Arcade.
 
